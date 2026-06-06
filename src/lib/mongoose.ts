@@ -1,7 +1,5 @@
 import mongoose from 'mongoose';
 
-const MONGODB_URI = process.env.MONGODB_URI;
-
 // We delay the throw to dbConnect so the Next.js build doesn't fail 
 // when the env var is missing during Docker image generation.
 
@@ -16,7 +14,9 @@ async function dbConnect() {
     return cached.conn;
   }
 
-  if (!MONGODB_URI) {
+  const uri = process.env.MONGODB_URI;
+
+  if (!uri) {
     throw new Error('Please define the MONGODB_URI environment variable inside .env');
   }
 
@@ -25,7 +25,7 @@ async function dbConnect() {
       bufferCommands: false,
     };
 
-    cached.promise = mongoose.connect(MONGODB_URI, opts).then((mongoose) => {
+    cached.promise = mongoose.connect(uri, opts).then((mongoose) => {
       return mongoose;
     });
   }
