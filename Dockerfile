@@ -8,6 +8,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     fonts-liberation \
     python3 \
     python3-pip \
+    zip \
     && rm -rf /var/lib/apt/lists/*
 
 # Install python dependencies for PDF to Word

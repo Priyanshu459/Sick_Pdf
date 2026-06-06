@@ -34,10 +34,10 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ success: false, error: 'File size exceeds 50MB limit' }, { status: 400 });
     }
 
-    if (type.startsWith('pdf-to-') && type !== 'pdf-to-word') {
+    if (type.startsWith('pdf-to-') && type !== 'pdf-to-word' && type !== 'pdf-to-jpg') {
       return NextResponse.json({ 
         success: false, 
-        error: `Server Error: PDF to Office conversion requires a paid 3rd-party OCR/conversion API. We currently only support PDF to Word.` 
+        error: `Server Error: PDF to Office conversion requires a paid 3rd-party OCR/conversion API. We currently only support PDF to Word and PDF to JPG.` 
       }, { status: 501 });
     }
 
@@ -70,6 +70,44 @@ export async function POST(request: NextRequest) {
       } catch (execError: any) {
         console.error('Python PDF2Word Error:', execError);
         throw new Error('Failed to convert PDF to Word');
+      }
+    } else if (type === 'pdf-to-jpg') {
+      outputFilepath = join(uploadDir, `${uniqueId}_output.zip`);
+      const jpgDir = join(uploadDir, `${uniqueId}_jpgs`);
+      try {
+        if (!existsSync(jpgDir)) {
+          await mkdir(jpgDir, { recursive: true });
+        }
+        // Extract to JPGs using Ghostscript
+        const jpgPattern = join(jpgDir, 'page_%03d.jpg').replace(/\\/g, '/');
+        const inputForGs = inputFilepath.replace(/\\/g, '/');
+        await execFileAsync('gs', [
+          '-dNOPAUSE',
+          '-sDEVICE=jpeg',
+          '-r300',
+          '-dJPEGQ=90',
+          `-sOutputFile=${jpgPattern}`,
+          inputForGs,
+          '-c',
+          'quit'
+        ], { timeout: 60000 });
+        
+        // Read generated files to pass to zip
+        const fsPromises = require('fs/promises');
+        const files = await fsPromises.readdir(jpgDir);
+        const filePaths = files.map((f: string) => join(jpgDir, f));
+        
+        // Zip the directory
+        await execFileAsync('zip', [
+          '-j', // junk paths (don't include directory structure)
+          outputFilepath,
+          ...filePaths
+        ], { timeout: 30000 });
+      } catch (execError: any) {
+        console.error('PDF to JPG Error:', execError);
+        throw new Error('Failed to convert PDF to JPG');
+      } finally {
+        if (existsSync(jpgDir)) await rm(jpgDir, { recursive: true, force: true });
       }
     } else {
       try {
@@ -115,6 +153,9 @@ export async function POST(request: NextRequest) {
     if (type === 'pdf-to-word') {
       response.headers.set('Content-Type', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document');
       response.headers.set('Content-Disposition', `attachment; filename="converted.docx"`);
+    } else if (type === 'pdf-to-jpg') {
+      response.headers.set('Content-Type', 'application/zip');
+      response.headers.set('Content-Disposition', `attachment; filename="images.zip"`);
     } else {
       response.headers.set('Content-Type', 'application/pdf');
       response.headers.set('Content-Disposition', `attachment; filename="converted.pdf"`);
