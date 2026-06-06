@@ -5,5 +5,3 @@ node_modules
 README.md
 tmp
 uploads
-.env
-.env.local
