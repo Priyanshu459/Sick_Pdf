@@ -16,7 +16,7 @@ const TYPE_CONFIG = {
   'pdf-to-jpg': { title: 'PDF to JPG', subtitle: 'Extract pages from your PDF file and save them as high-quality JPG images.', accept: 'application/pdf' },
 };
 
-export default function GenericConvert({ params }: { params: { type: string } }) {
+export default function GenericConvert() {
   // We use usePathname to handle the type generically as this is a client component
   // In Next.js App router, params are sometimes better accessed or we just use pathname
   const pathname = usePathname();
