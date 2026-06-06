@@ -4,7 +4,7 @@ import { useState, useRef } from 'react';
 import { pdfjs, Document, Page } from 'react-pdf';
 import 'react-pdf/dist/Page/AnnotationLayer.css';
 import 'react-pdf/dist/Page/TextLayer.css';
-import { PDFDocument, rgb, degrees } from 'pdf-lib';
+import { PDFDocument, rgb, degrees, StandardFonts } from 'pdf-lib';
 import { UploadCloud, Download, FileText, Trash2, RotateCw, Image as ImageIcon, Type, Droplet } from 'lucide-react';
 import styles from './page.module.css';
 
@@ -57,94 +57,92 @@ export default function EditorPage() {
   const handleDownload = async () => {
     if (!file) return;
     
-    const arrayBuffer = await file.arrayBuffer();
-    const pdfDoc = await PDFDocument.load(arrayBuffer);
-    
-    // Process deletions (in reverse order so indices don't shift)
-    const pagesToDelete = Array.from(deletedPages).sort((a, b) => b - a);
-    for (const pageIndex of pagesToDelete) {
-      pdfDoc.removePage(pageIndex);
-    }
-    
-    // Process rotations
-    const pages = pdfDoc.getPages();
-    for (let i = 0; i < pages.length; i++) {
-      // Need to adjust index based on deleted pages
-      // For a simple implementation, we assume we apply rotation before deletion logic index shifts, 
-      // but actually pdf-lib pages array is updated. It's safer to map original index to current.
-      // To simplify, we should just apply all rotations to the loaded doc before deleting.
-    }
-    
-    // Re-load to make logic simpler:
-    const finalDoc = await PDFDocument.load(arrayBuffer);
-    const allPages = finalDoc.getPages();
-    
-    // Apply Rotations
-    Object.entries(rotations).forEach(([idx, angle]) => {
-      if (angle !== 0) {
-        const page = allPages[parseInt(idx)];
-        const currentRotation = page.getRotation().angle;
-        page.setRotation(degrees(currentRotation + angle));
-      }
-    });
-
-    // Apply Custom Text
-    if (customText.trim() && textPage >= 1 && textPage <= allPages.length) {
-      const page = allPages[textPage - 1];
-      page.drawText(customText, {
-        x: textX,
-        y: textY,
-        size: 24,
-        color: rgb(0, 0, 0),
+    try {
+      const arrayBuffer = await file.arrayBuffer();
+      
+      // Load the document
+      const finalDoc = await PDFDocument.load(arrayBuffer);
+      const allPages = finalDoc.getPages();
+      
+      // Embed standard font to prevent missing font crashes
+      const helveticaFont = await finalDoc.embedFont(StandardFonts.Helvetica);
+      
+      // Apply Rotations
+      Object.entries(rotations).forEach(([idx, angle]) => {
+        if (angle !== 0) {
+          const page = allPages[parseInt(idx)];
+          const currentRotation = page.getRotation().angle;
+          page.setRotation(degrees(currentRotation + angle));
+        }
       });
-    }
 
-    // Apply Custom Image
-    if (imageFile && imagePage >= 1 && imagePage <= allPages.length) {
-      const imageBytes = await imageFile.arrayBuffer();
-      let pdfImage;
-      if (imageFile.type === 'image/png') {
-        pdfImage = await finalDoc.embedPng(imageBytes);
-      } else if (imageFile.type === 'image/jpeg') {
-        pdfImage = await finalDoc.embedJpg(imageBytes);
-      }
-      if (pdfImage) {
-        const page = allPages[imagePage - 1];
-        page.drawImage(pdfImage, {
-          x: imageX,
-          y: imageY,
-          width: 150,
-          height: 150,
+      // Apply Custom Text
+      if (customText.trim() && textPage >= 1 && textPage <= allPages.length) {
+        const page = allPages[textPage - 1];
+        page.drawText(customText, {
+          x: textX,
+          y: textY,
+          size: 24,
+          font: helveticaFont,
+          color: rgb(0, 0, 0),
         });
       }
-    }
 
-    // Apply Watermark to all non-deleted pages
-    if (watermarkText.trim()) {
-      allPages.forEach(page => {
-        const { width, height } = page.getSize();
-        page.drawText(watermarkText, {
-          x: width / 2 - 100,
-          y: height / 2,
-          size: 60,
-          color: rgb(0.8, 0.2, 0.2),
-          rotate: degrees(45),
-          opacity: 0.3,
+      // Apply Custom Image
+      if (imageFile && imagePage >= 1 && imagePage <= allPages.length) {
+        const imageBytes = await imageFile.arrayBuffer();
+        let pdfImage;
+        if (imageFile.type.match(/png/i)) {
+          pdfImage = await finalDoc.embedPng(imageBytes);
+        } else if (imageFile.type.match(/jpe?g/i)) {
+          pdfImage = await finalDoc.embedJpg(imageBytes);
+        }
+        if (pdfImage) {
+          const page = allPages[imagePage - 1];
+          page.drawImage(pdfImage, {
+            x: imageX,
+            y: imageY,
+            width: 150,
+            height: 150,
+          });
+        }
+      }
+
+      // Apply Watermark to all non-deleted pages
+      if (watermarkText.trim()) {
+        allPages.forEach(page => {
+          const { width, height } = page.getSize();
+          page.drawText(watermarkText, {
+            x: width / 2 - 150,
+            y: height / 2,
+            size: 60,
+            font: helveticaFont,
+            color: rgb(0.8, 0.2, 0.2),
+            rotate: degrees(45),
+            opacity: 0.3,
+          });
         });
+      }
+      
+      // Apply Deletions
+      Array.from(deletedPages).sort((a, b) => b - a).forEach(idx => {
+        finalDoc.removePage(idx);
       });
+      
+      const pdfBytes = await finalDoc.save();
+      const blob = new Blob([pdfBytes], { type: 'application/pdf' });
+      const link = document.createElement('a');
+      link.href = URL.createObjectURL(blob);
+      link.download = `edited_${file.name}`;
+      link.click();
+      
+      // Prevent memory leaks
+      setTimeout(() => URL.revokeObjectURL(link.href), 1000);
+      
+    } catch (err) {
+      console.error("Error editing PDF:", err);
+      alert("There was an error processing this PDF. It might be encrypted or corrupted.");
     }
-    
-    // Apply Deletions
-    Array.from(deletedPages).sort((a, b) => b - a).forEach(idx => {
-      finalDoc.removePage(idx);
-    });
-    
-    const pdfBytes = await finalDoc.save();
-    const blob = new Blob([pdfBytes], { type: 'application/pdf' });
-    const link = document.createElement('a');
-    link.href = URL.createObjectURL(blob);
-    link.download = `edited_${file.name}`;
-    link.click();
   };
 
   return (
