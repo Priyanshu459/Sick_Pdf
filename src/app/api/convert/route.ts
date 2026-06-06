@@ -63,10 +63,13 @@ export async function POST(request: NextRequest) {
     await writeFile(inputFilepath, buffer);
 
     try {
-      const loCommand = process.platform === 'win32' ? 'soffice' : 'libreoffice';
+      const isWin = process.platform === 'win32';
+      const fileUriPrefix = isWin ? 'file:///' : 'file://';
+      const loCommand = isWin ? 'soffice' : 'libreoffice';
+      
       await execFileAsync(loCommand, [
         // Crucial: Use a unique user profile to allow concurrent conversions!
-        `-env:UserInstallation=file:///${loProfilePath}`,
+        `-env:UserInstallation=${fileUriPrefix}${loProfilePath}`,
         '--headless',
         '--convert-to',
         'pdf',
