@@ -46,7 +46,7 @@ export async function POST(request: NextRequest) {
         {
           folder: `pdf-manager/${email}`,
           resource_type: 'raw', // For PDFs, use raw or auto
-          public_id: file.name.replace(/\.[^/.]+$/, "") + "_" + Date.now(), // Unique filename
+          public_id: file.name.replace(/\.[^/.]+$/, "") + "_" + Date.now() + ".pdf", // Unique filename with extension
         },
         (error, result) => {
           if (error) return reject(error);
@@ -82,20 +82,26 @@ export async function GET(request: NextRequest) {
     const email = session.user.email;
     const folder = `pdf-manager/${email}`;
 
-    // Fetch files in the user's specific folder
-    const result = await cloudinary.search
-      .expression(`folder:"${folder}"`)
-      .sort_by('created_at', 'desc')
-      .max_results(50)
-      .execute();
+    // Fetch files in the user's specific folder instantly using api.resources instead of search (which has an indexing delay)
+    const result = await cloudinary.api.resources({
+      type: 'upload',
+      prefix: `${folder}/`,
+      resource_type: 'raw',
+      max_results: 50,
+      direction: 'desc'
+    });
 
-    const files = result.resources.map((file: any) => ({
-      id: file.public_id,
-      name: file.filename + "." + file.format,
-      url: file.secure_url,
-      date: new Date(file.created_at).toISOString().split('T')[0],
-      size: file.bytes
-    }));
+    const files = result.resources.map((file: any) => {
+      // For raw files, filename/format might not be present, so we extract from public_id
+      const name = file.public_id.split('/').pop() || "Unknown PDF";
+      return {
+        id: file.public_id,
+        name: name,
+        url: file.secure_url,
+        date: new Date(file.created_at).toISOString().split('T')[0],
+        size: file.bytes
+      };
+    });
 
     return NextResponse.json({ success: true, files });
   } catch (error: any) {
