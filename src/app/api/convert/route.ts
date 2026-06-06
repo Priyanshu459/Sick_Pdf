@@ -41,7 +41,8 @@ export async function POST(request: NextRequest) {
       }, { status: 501 });
     }
 
-    const originalExtension = file.name.split('.').pop() || '';
+    const rawExtension = file.name.split('.').pop() || '';
+    const originalExtension = rawExtension.replace(/[^a-zA-Z0-9]/g, ''); // Strictly sanitize
     if (!originalExtension) {
       return NextResponse.json({ success: false, error: 'File must have a valid extension.' }, { status: 400 });
     }

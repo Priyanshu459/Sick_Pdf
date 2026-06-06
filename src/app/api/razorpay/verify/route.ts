@@ -14,9 +14,14 @@ export async function POST(req: Request) {
 
     const { razorpay_order_id, razorpay_payment_id, razorpay_signature } = await req.json();
 
+    const secret = process.env.RAZORPAY_KEY_SECRET;
+    if (!secret) {
+      throw new Error('Server configuration error: Missing Razorpay Secret');
+    }
+
     const text = razorpay_order_id + "|" + razorpay_payment_id;
     const generated_signature = crypto
-      .createHmac("sha256", process.env.RAZORPAY_KEY_SECRET || "")
+      .createHmac("sha256", secret)
       .update(text)
       .digest("hex");
 
