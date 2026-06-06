@@ -1,10 +1,13 @@
 'use client';
 
 import { useState } from 'react';
-import { Cloud, CheckCircle2, AlertCircle } from 'lucide-react';
+import { useSession } from 'next-auth/react';
+import { Cloud, CheckCircle2, AlertCircle, Lock } from 'lucide-react';
 import styles from '../server-tool.module.css';
+import dashboardStyles from '../dashboard/page.module.css';
 
 export default function CloudIntegrations() {
+  const { data: session } = useSession();
   const [connecting, setConnecting] = useState<string | null>(null);
 
   const handleConnect = (provider: string) => {
@@ -22,6 +25,18 @@ export default function CloudIntegrations() {
         <p className={styles.subtitle}>Connect your favorite cloud storage providers to import and export files directly.</p>
       </div>
 
+      {session?.user && !(session.user as any).isPremium ? (
+        <div className={dashboardStyles.premiumLock}>
+          <h2>Premium Feature</h2>
+          <p>Cloud Integrations are only available to Premium users.</p>
+          <p>Get a 1-Month Pass to unlock direct cloud imports and exports!</p>
+          <form action="/api/checkout" method="POST">
+            <button type="submit" className={dashboardStyles.upgradeBtn}>
+              Upgrade to Premium (₹499)
+            </button>
+          </form>
+        </div>
+      ) : (
       <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem', marginTop: '2rem' }}>
         
         {/* Google Drive */}
@@ -95,6 +110,7 @@ export default function CloudIntegrations() {
         </div>
 
       </div>
+      )}
     </div>
   );
 }
