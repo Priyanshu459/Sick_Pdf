@@ -11,8 +11,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     zip \
     && rm -rf /var/lib/apt/lists/*
 
-# Install python dependencies for PDF to Word
-RUN pip3 install pdf2docx
+# Install python dependencies for PDF to Word (Pin PyMuPDF to avoid get_area API error)
+RUN pip3 install pdf2docx "PyMuPDF<1.24.0"
 
 # Set working directory
 WORKDIR /app
