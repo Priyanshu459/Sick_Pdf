@@ -97,7 +97,7 @@ export async function GET(request: NextRequest) {
       return {
         id: file.public_id,
         name: name,
-        url: file.secure_url,
+        url: file.secure_url.replace('/upload/', '/upload/fl_attachment/'),
         date: new Date(file.created_at).toISOString().split('T')[0],
         size: file.bytes
       };
@@ -130,7 +130,7 @@ export async function DELETE(request: NextRequest) {
       return NextResponse.json({ success: false, error: 'Forbidden. You do not own this file.' }, { status: 403 });
     }
 
-    const result = await cloudinary.uploader.destroy(publicId);
+    const result = await cloudinary.uploader.destroy(publicId, { resource_type: 'raw' });
 
     return NextResponse.json({ success: true, result });
   } catch (error: any) {
