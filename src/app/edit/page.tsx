@@ -139,7 +139,7 @@ export default function EditorPage() {
       });
       
       const pdfBytes = await finalDoc.save();
-      const blob = new Blob([pdfBytes], { type: 'application/pdf' });
+      const blob = new Blob([pdfBytes as any], { type: 'application/pdf' });
       const link = document.createElement('a');
       link.href = URL.createObjectURL(blob);
       link.download = `edited_${file.name}`;
