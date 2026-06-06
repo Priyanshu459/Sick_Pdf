@@ -43,14 +43,14 @@ const TOOLS = [
     title: 'PDF to Word',
     description: 'Easily convert your PDF files into easy to edit DOC and DOCX documents.',
     icon: <FileText className={styles.toolIcon} />,
-    href: '/convert/word',
+    href: '/convert/pdf-to-word',
     color: '#3B82F6' // blue
   },
   {
     title: 'PDF to Excel',
     description: 'Pull data straight from PDFs into Excel spreadsheets in a few short seconds.',
     icon: <FileDigit className={styles.toolIcon} />,
-    href: '/convert/excel',
+    href: '/convert/pdf-to-excel',
     color: '#10B981' // green
   },
   {

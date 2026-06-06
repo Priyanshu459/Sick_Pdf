@@ -12,6 +12,8 @@ const TYPE_CONFIG = {
   'pdf-to-word': { title: 'PDF to Word', subtitle: 'Convert your PDF to WORD documents with incredible accuracy.', accept: 'application/pdf' },
   'pdf-to-excel': { title: 'PDF to Excel', subtitle: 'Convert PDF Data to EXCEL Spreadsheets.', accept: 'application/pdf' },
   'pdf-to-ppt': { title: 'PDF to PowerPoint', subtitle: 'Turn your PDF files into easy to edit PPT and PPTX slideshows.', accept: 'application/pdf' },
+  'jpg-to-pdf': { title: 'JPG to PDF', subtitle: 'Convert JPG images to PDF in seconds. Easily adjust orientation and margins.', accept: 'image/jpeg,image/jpg,image/png' },
+  'pdf-to-jpg': { title: 'PDF to JPG', subtitle: 'Extract pages from your PDF file and save them as high-quality JPG images.', accept: 'application/pdf' },
 };
 
 export default function GenericConvert({ params }: { params: { type: string } }) {
