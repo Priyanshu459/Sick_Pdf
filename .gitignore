@@ -39,3 +39,11 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# Uploads & Temp Data (Security: Prevent leaking local PDFs)
+/tmp/
+/uploads/
+
+# IDE
+.vscode/
+.idea/
