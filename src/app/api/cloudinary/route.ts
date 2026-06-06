@@ -46,7 +46,7 @@ export async function POST(request: NextRequest) {
         {
           folder: `pdf-manager/${email}`,
           resource_type: 'raw', // For PDFs, use raw or auto
-          public_id: file.name.replace(/\.[^/.]+$/, ""), // Original filename without extension
+          public_id: file.name.replace(/\.[^/.]+$/, "") + "_" + Date.now(), // Unique filename
         },
         (error, result) => {
           if (error) return reject(error);
@@ -63,7 +63,72 @@ export async function POST(request: NextRequest) {
     });
 
   } catch (error: any) {
-    console.error('Error in cloudinary API:', error);
+    console.error('Error in cloudinary POST API:', error);
     return NextResponse.json({ success: false, error: 'An internal server error occurred while processing your request.' }, { status: 500 });
+  }
+}
+
+export async function GET(request: NextRequest) {
+  try {
+    const session = await getServerSession(authOptions);
+    if (!session || !session.user || !session.user.email) {
+      return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 });
+    }
+
+    if (!process.env.CLOUDINARY_URL) {
+      return NextResponse.json({ success: false, error: 'Cloudinary not configured' }, { status: 501 });
+    }
+
+    const email = session.user.email;
+    const folder = `pdf-manager/${email}`;
+
+    // Fetch files in the user's specific folder
+    const result = await cloudinary.search
+      .expression(`folder:"${folder}"`)
+      .sort_by('created_at', 'desc')
+      .max_results(50)
+      .execute();
+
+    const files = result.resources.map((file: any) => ({
+      id: file.public_id,
+      name: file.filename + "." + file.format,
+      url: file.secure_url,
+      date: new Date(file.created_at).toISOString().split('T')[0],
+      size: file.bytes
+    }));
+
+    return NextResponse.json({ success: true, files });
+  } catch (error: any) {
+    console.error('Error in cloudinary GET API:', error);
+    return NextResponse.json({ success: false, error: 'Failed to fetch files' }, { status: 500 });
+  }
+}
+
+export async function DELETE(request: NextRequest) {
+  try {
+    const session = await getServerSession(authOptions);
+    if (!session || !session.user || !session.user.email) {
+      return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 });
+    }
+
+    const email = session.user.email;
+    const body = await request.json();
+    const publicId = body.public_id;
+
+    if (!publicId) {
+      return NextResponse.json({ success: false, error: 'public_id is required' }, { status: 400 });
+    }
+
+    // Security Check: Ensure the user can only delete files inside their own folder!
+    if (!publicId.startsWith(`pdf-manager/${email}/`)) {
+      return NextResponse.json({ success: false, error: 'Forbidden. You do not own this file.' }, { status: 403 });
+    }
+
+    const result = await cloudinary.uploader.destroy(publicId);
+
+    return NextResponse.json({ success: true, result });
+  } catch (error: any) {
+    console.error('Error in cloudinary DELETE API:', error);
+    return NextResponse.json({ success: false, error: 'Failed to delete file' }, { status: 500 });
   }
 }
