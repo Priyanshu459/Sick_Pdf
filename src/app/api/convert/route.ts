@@ -34,10 +34,10 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ success: false, error: 'File size exceeds 50MB limit' }, { status: 400 });
     }
 
-    if (type.startsWith('pdf-to-')) {
+    if (type.startsWith('pdf-to-') && type !== 'pdf-to-word') {
       return NextResponse.json({ 
         success: false, 
-        error: `Server Error: PDF to Office conversion requires a paid 3rd-party OCR/conversion API. LibreOffice can only convert Office to PDF.` 
+        error: `Server Error: PDF to Office conversion requires a paid 3rd-party OCR/conversion API. We currently only support PDF to Word.` 
       }, { status: 501 });
     }
 
@@ -62,36 +62,47 @@ export async function POST(request: NextRequest) {
     
     await writeFile(inputFilepath, buffer);
 
-    try {
-      const isWin = process.platform === 'win32';
-      const fileUriPrefix = isWin ? 'file:///' : 'file://';
-      const loCommand = isWin ? 'soffice' : 'libreoffice';
-      
-      await execFileAsync(loCommand, [
-        // Crucial: Use a unique user profile to allow concurrent conversions!
-        `-env:UserInstallation=${fileUriPrefix}${loProfilePath}`,
-        '--headless',
-        '--convert-to',
-        'pdf',
-        inputFilepath,
-        '--outdir',
-        uploadDir
-      ], { timeout: 30000 }); // 30 second timeout for heavy PPTs
-    } catch (execError: any) {
-      console.error('LibreOffice Error:', execError);
-      
-      if (execError.message.includes('not recognized') || execError.code === 127 || execError.message.includes('ENOENT')) {
-        return NextResponse.json({ 
-          success: false, 
-          error: 'Server Error: LibreOffice is not installed on the server.' 
-        }, { status: 501 });
+    if (type === 'pdf-to-word') {
+      outputFilepath = join(uploadDir, `${uniqueId}_output.docx`);
+      try {
+        const scriptPath = join(process.cwd(), 'src', 'scripts', 'pdf2word.py');
+        await execFileAsync('python3', [scriptPath, inputFilepath, outputFilepath], { timeout: 60000 });
+      } catch (execError: any) {
+        console.error('Python PDF2Word Error:', execError);
+        throw new Error('Failed to convert PDF to Word');
       }
-      
-      throw new Error('Failed to convert document');
+    } else {
+      try {
+        const isWin = process.platform === 'win32';
+        const fileUriPrefix = isWin ? 'file:///' : 'file://';
+        const loCommand = isWin ? 'soffice' : 'libreoffice';
+        
+        await execFileAsync(loCommand, [
+          // Crucial: Use a unique user profile to allow concurrent conversions!
+          `-env:UserInstallation=${fileUriPrefix}${loProfilePath}`,
+          '--headless',
+          '--convert-to',
+          'pdf',
+          inputFilepath,
+          '--outdir',
+          uploadDir
+        ], { timeout: 30000 }); // 30 second timeout for heavy PPTs
+      } catch (execError: any) {
+        console.error('LibreOffice Error:', execError);
+        
+        if (execError.message.includes('not recognized') || execError.code === 127 || execError.message.includes('ENOENT')) {
+          return NextResponse.json({ 
+            success: false, 
+            error: 'Server Error: LibreOffice is not installed on the server.' 
+          }, { status: 501 });
+        }
+        
+        throw new Error('Failed to convert document');
+      }
+  
+      // LibreOffice saves the output file with the same base name but .pdf extension
+      outputFilepath = join(uploadDir, `${uniqueId}_input.pdf`);
     }
-
-    // LibreOffice saves the output file with the same base name but .pdf extension
-    outputFilepath = join(uploadDir, `${uniqueId}_input.pdf`);
 
     if (!existsSync(outputFilepath)) {
       throw new Error('Converted PDF not found');
@@ -100,8 +111,14 @@ export async function POST(request: NextRequest) {
     const outputBuffer = await readFile(outputFilepath);
 
     const response = new NextResponse(outputBuffer);
-    response.headers.set('Content-Type', 'application/pdf');
-    response.headers.set('Content-Disposition', `attachment; filename="converted.pdf"`);
+    
+    if (type === 'pdf-to-word') {
+      response.headers.set('Content-Type', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document');
+      response.headers.set('Content-Disposition', `attachment; filename="converted.docx"`);
+    } else {
+      response.headers.set('Content-Type', 'application/pdf');
+      response.headers.set('Content-Disposition', `attachment; filename="converted.pdf"`);
+    }
     
     return response;
 

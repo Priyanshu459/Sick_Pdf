@@ -6,7 +6,12 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     qpdf \
     libreoffice \
     fonts-liberation \
+    python3 \
+    python3-pip \
     && rm -rf /var/lib/apt/lists/*
+
+# Install python dependencies for PDF to Word
+RUN pip3 install pdf2docx
 
 # Set working directory
 WORKDIR /app
