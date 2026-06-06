@@ -81,8 +81,11 @@ export default function GenericConvert({ params }: { params: { type: string } })
       const url = URL.createObjectURL(blob);
       const link = document.createElement('a');
       link.href = url;
-      // Provide appropriate extension based on conversion type
-      const ext = type.startsWith('pdf-to') ? (type.includes('word') ? '.docx' : type.includes('excel') ? '.xlsx' : '.pptx') : '.pdf';
+      let ext = '.pdf';
+      if (type === 'pdf-to-word') ext = '.docx';
+      else if (type === 'pdf-to-excel') ext = '.xlsx';
+      else if (type === 'pdf-to-ppt') ext = '.pptx';
+      else if (type === 'pdf-to-jpg') ext = '.zip';
       link.download = `converted_${file.name.split('.')[0]}${ext}`;
       document.body.appendChild(link);
       link.click();
