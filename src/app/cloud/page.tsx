@@ -5,6 +5,7 @@ import { useSession } from 'next-auth/react';
 import { Cloud, CheckCircle2, AlertCircle, Lock } from 'lucide-react';
 import styles from '../server-tool.module.css';
 import dashboardStyles from '../dashboard/page.module.css';
+import RazorpayButton from "@/components/RazorpayButton";
 
 export default function CloudIntegrations() {
   const { data: session } = useSession();
@@ -30,11 +31,7 @@ export default function CloudIntegrations() {
           <h2>Premium Feature</h2>
           <p>Cloud Integrations are only available to Premium users.</p>
           <p>Get a 1-Month Pass to unlock direct cloud imports and exports!</p>
-          <form action="/api/checkout" method="POST">
-            <button type="submit" className={dashboardStyles.upgradeBtn}>
-              Upgrade to Premium (₹499)
-            </button>
-          </form>
+          <RazorpayButton email={session.user.email || ""} name={session.user.name || ""} />
         </div>
       ) : (
       <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem', marginTop: '2rem' }}>

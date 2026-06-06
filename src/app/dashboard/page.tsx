@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 import styles from "./page.module.css";
 import { FileText, Download, Trash2 } from "lucide-react";
+import RazorpayButton from "@/components/RazorpayButton";
 
 // Mock data until Cloudinary is hooked up
 const mockPdfs = [
@@ -31,11 +32,7 @@ export default async function DashboardPage() {
           <h2>Premium Feature</h2>
           <p>The Cloud Dashboard is only available to Premium users.</p>
           <p>Get a 1-Month Pass to unlock cloud storage for your PDFs!</p>
-          <form action="/api/checkout" method="POST">
-            <button type="submit" className={styles.upgradeBtn}>
-              Upgrade to Premium (₹499)
-            </button>
-          </form>
+          <RazorpayButton email={session.user.email || ""} name={session.user.name || ""} />
         </div>
       ) : (
         <>
