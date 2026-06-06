@@ -1,9 +1,11 @@
 FROM node:20-bullseye-slim
 
 # Install required system dependencies for PDF processing
-RUN apt-get update && apt-get install -y \
+RUN apt-get update && apt-get install -y --no-install-recommends \
     ghostscript \
     qpdf \
+    libreoffice \
+    fonts-liberation \
     && rm -rf /var/lib/apt/lists/*
 
 # Set working directory
