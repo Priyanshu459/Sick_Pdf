@@ -1,6 +1,6 @@
 import { getServerSession } from "next-auth/next";
 import { redirect } from "next/navigation";
-import { authOptions } from "@/app/api/auth/[...nextauth]/route";
+import { authOptions } from "@/lib/authOptions";
 import styles from "./page.module.css";
 import { FileText, Download, Trash2 } from "lucide-react";
 import RazorpayButton from "@/components/RazorpayButton";
