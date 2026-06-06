@@ -8,6 +8,8 @@ services:
     restart: unless-stopped
     environment:
       - NODE_ENV=production
+    env_file:
+      - .env
     volumes:
       # Mount a local tmp folder so PDFs don't persist in the container layer
       - ./tmp:/app/tmp
