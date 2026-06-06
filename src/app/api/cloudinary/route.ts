@@ -45,8 +45,8 @@ export async function POST(request: NextRequest) {
       const uploadStream = cloudinary.uploader.upload_stream(
         {
           folder: `pdf-manager/${email}`,
-          resource_type: 'raw', // For PDFs, use raw or auto
-          public_id: file.name.replace(/\.[^/.]+$/, "") + "_" + Date.now() + ".pdf", // Unique filename with extension
+          resource_type: 'image', // Cloudinary natively handles PDFs under 'image' and serves correct application/pdf MIME type
+          public_id: file.name.replace(/\.[^/.]+$/, "") + "_" + Date.now(), // Unique filename
         },
         (error, result) => {
           if (error) return reject(error);
@@ -82,22 +82,22 @@ export async function GET(request: NextRequest) {
     const email = session.user.email;
     const folder = `pdf-manager/${email}`;
 
-    // Fetch files in the user's specific folder instantly using api.resources instead of search (which has an indexing delay)
+    // Fetch files natively as images (which includes PDFs)
     const result = await cloudinary.api.resources({
       type: 'upload',
       prefix: `${folder}/`,
-      resource_type: 'raw',
+      resource_type: 'image',
       max_results: 50,
       direction: 'desc'
     });
 
     const files = result.resources.map((file: any) => {
-      // For raw files, filename/format might not be present, so we extract from public_id
-      const name = file.public_id.split('/').pop() || "Unknown PDF";
+      // Extract filename from public_id and append .pdf for UI display
+      const name = file.public_id.split('/').pop() + ".pdf";
       return {
         id: file.public_id,
         name: name,
-        url: file.secure_url.replace('/upload/', '/upload/fl_attachment/'),
+        url: file.secure_url,
         date: new Date(file.created_at).toISOString().split('T')[0],
         size: file.bytes
       };
@@ -125,12 +125,12 @@ export async function DELETE(request: NextRequest) {
       return NextResponse.json({ success: false, error: 'public_id is required' }, { status: 400 });
     }
 
-    // Security Check: Ensure the user can only delete files inside their own folder!
     if (!publicId.startsWith(`pdf-manager/${email}/`)) {
       return NextResponse.json({ success: false, error: 'Forbidden. You do not own this file.' }, { status: 403 });
     }
 
-    const result = await cloudinary.uploader.destroy(publicId, { resource_type: 'raw' });
+    // Default destroy uses image resource_type
+    const result = await cloudinary.uploader.destroy(publicId);
 
     return NextResponse.json({ success: true, result });
   } catch (error: any) {

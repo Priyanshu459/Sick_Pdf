@@ -46,8 +46,8 @@ export async function POST(request: NextRequest) {
       const uploadStream = cloudinary.uploader.upload_stream(
         {
           folder: `pdf-manager/${email}`,
-          resource_type: 'raw', // For PDFs, use raw or auto
-          public_id: fileName.replace(/\.[^/.]+$/, "") + "_" + Date.now() + ".pdf", // Unique filename with extension
+          resource_type: 'image', // For PDFs, use image so Cloudinary serves correct application/pdf MIME type
+          public_id: fileName.replace(/\.[^/.]+$/, "") + "_" + Date.now(), // Unique filename
         },
         (error, result) => {
           if (error) return reject(error);
