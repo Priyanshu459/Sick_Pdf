@@ -30,7 +30,7 @@ export default function RazorpayButton({ email, name }: { email: string, name: s
 
       // 2. Initialize Razorpay popup
       const options = {
-        key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID, // Use NEXT_PUBLIC_ for client access
+        key: data.keyId, // Fetched securely from backend at runtime!
         amount: "49900",
         currency: "INR",
         name: "PDF Master",

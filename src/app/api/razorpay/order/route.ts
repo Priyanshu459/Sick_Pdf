@@ -22,7 +22,10 @@ export async function POST(req: Request) {
     };
 
     const order = await razorpay.orders.create(options);
-    return NextResponse.json({ orderId: order.id });
+    return NextResponse.json({ 
+      orderId: order.id,
+      keyId: process.env.RAZORPAY_KEY_ID 
+    });
   } catch (err: any) {
     console.error('Razorpay Order Error:', err);
     return NextResponse.json({ error: err.message }, { status: 500 });
