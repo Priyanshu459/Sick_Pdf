@@ -57,6 +57,11 @@ export default function EditorPage() {
   const handleDownload = async () => {
     if (!file) return;
     
+    if (numPages > 0 && deletedPages.size === numPages) {
+      alert("Error: You cannot delete every page in the document. Please keep at least one page.");
+      return;
+    }
+    
     try {
       const arrayBuffer = await file.arrayBuffer();
       
