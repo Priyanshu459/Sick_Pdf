@@ -17,6 +17,8 @@ export default async function DashboardPage() {
     redirect("/");
   }
 
+  const isPremium = (session.user as any).isPremium;
+
   return (
     <div className={styles.container}>
       <header className={styles.header}>
@@ -24,7 +26,20 @@ export default async function DashboardPage() {
         <p className={styles.subtitle}>Welcome back, {session.user.name}</p>
       </header>
 
-      <section className={styles.pdfGrid}>
+      {!isPremium ? (
+        <div className={styles.premiumLock}>
+          <h2>Premium Feature</h2>
+          <p>The Cloud Dashboard is only available to Premium users.</p>
+          <p>Get a 1-Month Pass to unlock cloud storage for your PDFs!</p>
+          <form action="/api/checkout" method="POST">
+            <button type="submit" className={styles.upgradeBtn}>
+              Upgrade to Premium (₹499)
+            </button>
+          </form>
+        </div>
+      ) : (
+        <>
+          <section className={styles.pdfGrid}>
         {mockPdfs.map((pdf) => (
           <div key={pdf.id} className={styles.pdfCard}>
             <div className={styles.pdfIconWrapper}>
@@ -50,6 +65,8 @@ export default async function DashboardPage() {
         <div className={styles.emptyState}>
           <p>You haven't uploaded any PDFs to your cloud yet.</p>
         </div>
+      )}
+        </>
       )}
     </div>
   );
