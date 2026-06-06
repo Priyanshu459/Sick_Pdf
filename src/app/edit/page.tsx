@@ -210,11 +210,11 @@ export default function EditorPage() {
                   <label>Text to add:</label>
                   <input type="text" value={customText} onChange={e => setCustomText(e.target.value)} placeholder="Enter text..." />
                   <label>Page Number:</label>
-                  <input type="number" min={1} max={numPages} value={textPage} onChange={e => setTextPage(parseInt(e.target.value))} />
-                  <label>X Coordinate:</label>
-                  <input type="number" value={textX} onChange={e => setTextX(parseInt(e.target.value))} />
-                  <label>Y Coordinate:</label>
-                  <input type="number" value={textY} onChange={e => setTextY(parseInt(e.target.value))} />
+                  <input type="number" min={1} max={numPages} value={textPage} onChange={e => setTextPage(parseInt(e.target.value) || 1)} />
+                  <label>X Coordinate (from bottom-left):</label>
+                  <input type="number" value={textX} onChange={e => setTextX(parseInt(e.target.value) || 0)} />
+                  <label>Y Coordinate (from bottom-left):</label>
+                  <input type="number" value={textY} onChange={e => setTextY(parseInt(e.target.value) || 0)} />
                 </div>
               )}
 
@@ -223,11 +223,11 @@ export default function EditorPage() {
                   <label>Upload Image:</label>
                   <input type="file" accept="image/png, image/jpeg" onChange={e => e.target.files && setImageFile(e.target.files[0])} />
                   <label>Page Number:</label>
-                  <input type="number" min={1} max={numPages} value={imagePage} onChange={e => setImagePage(parseInt(e.target.value))} />
-                  <label>X Coordinate:</label>
-                  <input type="number" value={imageX} onChange={e => setImageX(parseInt(e.target.value))} />
-                  <label>Y Coordinate:</label>
-                  <input type="number" value={imageY} onChange={e => setImageY(parseInt(e.target.value))} />
+                  <input type="number" min={1} max={numPages} value={imagePage} onChange={e => setImagePage(parseInt(e.target.value) || 1)} />
+                  <label>X Coordinate (from bottom-left):</label>
+                  <input type="number" value={imageX} onChange={e => setImageX(parseInt(e.target.value) || 0)} />
+                  <label>Y Coordinate (from bottom-left):</label>
+                  <input type="number" value={imageY} onChange={e => setImageY(parseInt(e.target.value) || 0)} />
                 </div>
               )}
 
