@@ -8,13 +8,17 @@ import { PDFDocument, rgb, degrees, StandardFonts } from 'pdf-lib';
 import { UploadCloud, Download, FileText, Trash2, RotateCw, Image as ImageIcon, Type, Droplet } from 'lucide-react';
 import styles from './page.module.css';
 
-// Configure PDF.js worker
-pdfjs.GlobalWorkerOptions.workerSrc = `//unpkg.com/pdfjs-dist@${pdfjs.version}/build/pdf.worker.min.mjs`;
+// Configure PDF.js worker safely for Next.js SSR
+if (typeof window !== 'undefined') {
+  pdfjs.GlobalWorkerOptions.workerSrc = `//unpkg.com/pdfjs-dist@${pdfjs.version}/build/pdf.worker.min.mjs`;
+}
 
 export default function EditorPage() {
   const [file, setFile] = useState<File | null>(null);
   const [numPages, setNumPages] = useState<number>(0);
   const [activeTool, setActiveTool] = useState<'organize' | 'text' | 'image' | 'watermark'>('organize');
+  const [thumbnailStart, setThumbnailStart] = useState(0);
+  const THUMBNAILS_PER_PAGE = 20;
   
   // State for document manipulation
   const [rotations, setRotations] = useState<Record<number, number>>({});
@@ -255,7 +259,9 @@ export default function EditorPage() {
               className={styles.document}
             >
               <div className={styles.pagesGrid}>
-                {Array.from(new Array(numPages), (el, index) => (
+                {Array.from(new Array(numPages), (el, index) => index)
+                  .slice(thumbnailStart, thumbnailStart + THUMBNAILS_PER_PAGE)
+                  .map((index) => (
                   <div 
                     key={`page_${index + 1}`} 
                     className={`${styles.pageWrapper} ${deletedPages.has(index) ? styles.deleted : ''}`}
@@ -283,6 +289,28 @@ export default function EditorPage() {
                   </div>
                 ))}
               </div>
+              
+              {numPages > THUMBNAILS_PER_PAGE && (
+                <div className={styles.pagination}>
+                  <button 
+                    className={styles.pageBtn}
+                    disabled={thumbnailStart === 0}
+                    onClick={() => setThumbnailStart(Math.max(0, thumbnailStart - THUMBNAILS_PER_PAGE))}
+                  >
+                    Previous Pages
+                  </button>
+                  <span className={styles.pageInfo}>
+                    Showing {thumbnailStart + 1} - {Math.min(numPages, thumbnailStart + THUMBNAILS_PER_PAGE)} of {numPages}
+                  </span>
+                  <button 
+                    className={styles.pageBtn}
+                    disabled={thumbnailStart + THUMBNAILS_PER_PAGE >= numPages}
+                    onClick={() => setThumbnailStart(thumbnailStart + THUMBNAILS_PER_PAGE)}
+                  >
+                    Next Pages
+                  </button>
+                </div>
+              )}
             </Document>
           </main>
         </div>
