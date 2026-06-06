@@ -9,7 +9,7 @@ import dashboardStyles from '../dashboard/page.module.css';
 import RazorpayButton from "@/components/RazorpayButton";
 
 export default function CloudIntegrations() {
-  const { data: session } = useSession();
+  const { data: session, status } = useSession();
   const [connecting, setConnecting] = useState<string | null>(null);
 
   useEffect(() => {
@@ -29,8 +29,15 @@ export default function CloudIntegrations() {
       }
     }, 500);
 
-    return () => clearInterval(interval);
   }, []);
+
+  if (status === 'loading') {
+    return <div style={{ display: 'flex', justifyContent: 'center', marginTop: '5rem' }}>Loading secure cloud environments...</div>;
+  }
+
+  if (status === 'unauthenticated') {
+    return <div style={{ textAlign: 'center', marginTop: '5rem' }}>Please log in to access Cloud Integrations.</div>;
+  }
 
   const handleDropboxConnect = () => {
     if (!process.env.NEXT_PUBLIC_DROPBOX_APP_KEY) {
