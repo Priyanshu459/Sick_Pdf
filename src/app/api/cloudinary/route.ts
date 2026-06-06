@@ -46,6 +46,7 @@ export async function POST(request: NextRequest) {
         {
           folder: `pdf-manager/${email}`,
           resource_type: 'image', // Cloudinary natively handles PDFs under 'image' and serves correct application/pdf MIME type
+          format: 'pdf', // Explicitly force Cloudinary to process and serve this as a PDF document
           public_id: file.name.replace(/\.[^/.]+$/, "") + "_" + Date.now(), // Unique filename
         },
         (error, result) => {
