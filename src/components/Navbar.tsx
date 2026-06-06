@@ -21,6 +21,7 @@ export default function Navbar() {
           <Link href="/split" className={styles.link}>Split PDF</Link>
           <Link href="/compress" className={styles.link}>Compress</Link>
           <Link href="/convert" className={styles.link}>Convert</Link>
+          <Link href="/edit" className={styles.link}>Edit PDF</Link>
         </div>
 
         <div className={styles.actions}>
