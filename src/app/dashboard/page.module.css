@@ -142,3 +142,12 @@
   border-radius: 12px;
   border: 1px dashed var(--border-color);
 }
+
+@media (max-width: 768px) {
+  .container { padding: 1.5rem 1rem; }
+  .title { font-size: 2rem; }
+  .premiumLock { padding: 2rem 1rem; }
+  .premiumLock h2 { font-size: 1.5rem; }
+  .pdfGrid { grid-template-columns: 1fr; }
+  .pdfCard { flex-direction: column; align-items: flex-start; gap: 0.5rem; }
+}
