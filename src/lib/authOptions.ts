@@ -39,8 +39,6 @@ export const authOptions: NextAuthOptions = {
         await dbConnect();
         const dbUser = await User.findOne({ email: session.user.email });
         if (dbUser) {
-          const isPremium = dbUser.premiumExpiresAt ? new Date(dbUser.premiumExpiresAt).getTime() > Date.now() : false;
-          (session.user as any).isPremium = isPremium;
         }
       }
       return session;

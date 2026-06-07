@@ -6,7 +6,6 @@ import { Cloud, AlertCircle } from 'lucide-react';
 import Script from 'next/script';
 import styles from '../server-tool.module.css';
 import dashboardStyles from '../dashboard/page.module.css';
-import RazorpayButton from "@/components/RazorpayButton";
 
 export default function CloudIntegrations() {
   const { data: session, status } = useSession();
@@ -174,14 +173,6 @@ export default function CloudIntegrations() {
           <p className={styles.subtitle}>Connect your favorite cloud storage providers to import files directly into your dashboard.</p>
         </div>
 
-        {session?.user && !(session.user as any).isPremium ? (
-          <div className={dashboardStyles.premiumLock}>
-            <h2>Premium Feature</h2>
-            <p>Cloud Integrations are only available to Premium users.</p>
-            <p>Get a 1-Month Pass to unlock direct cloud imports!</p>
-            <RazorpayButton email={session.user.email || ""} name={session.user.name || ""} />
-          </div>
-        ) : (
         <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem', marginTop: '2rem' }}>
           
           {/* Google Drive */}
@@ -257,7 +248,6 @@ export default function CloudIntegrations() {
           </div>
 
         </div>
-        )}
       </div>
     </>
   );

@@ -41,7 +41,6 @@ export default function Navbar() {
             ) : (
               <>
                 <button onClick={() => signIn("google")} className={styles.link} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}>Log in with Google</button>
-                <Link href="#" className={styles.premiumBtn}>Go Premium</Link>
               </>
             )}
           </div>
@@ -76,7 +75,6 @@ export default function Navbar() {
             ) : (
               <>
                 <button onClick={() => { signIn("google"); toggleMenu(); }} className={styles.mobileLink} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0, textAlign: 'left' }}>Log in with Google</button>
-                <Link href="#" className={styles.premiumBtn} style={{ textAlign: 'center', marginTop: '1rem', display: 'block' }} onClick={toggleMenu}>Go Premium</Link>
               </>
             )}
           </div>
