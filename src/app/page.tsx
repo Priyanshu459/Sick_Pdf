@@ -119,8 +119,24 @@ const TOOLS = [
 ];
 
 export default function Home() {
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@type": "WebApplication",
+    "name": "PDF Master",
+    "url": "https://pdfmaster.rooted-feed.online",
+    "description": "Every tool you need to use PDFs, at your fingertips. All are 100% FREE and easy to use!",
+    "applicationCategory": "UtilitiesApplication",
+    "operatingSystem": "All",
+    "offers": {
+      "@type": "Offer",
+      "price": "0.00",
+      "priceCurrency": "USD"
+    }
+  };
+
   return (
     <div className={styles.container}>
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
       <header className={styles.hero}>
         <h1 className={styles.title}>Every tool you need to work with PDFs in one place</h1>
         <p className={styles.subtitle}>
