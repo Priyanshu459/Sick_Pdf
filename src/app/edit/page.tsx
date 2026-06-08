@@ -1,16 +1,11 @@
-'use client';
+import { Metadata } from 'next';
+import EditClient from './EditClient';
 
-import dynamic from 'next/dynamic';
-
-const Editor = dynamic(() => import('./Editor'), {
-  ssr: false,
-  loading: () => (
-    <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh', width: '100vw', fontFamily: 'sans-serif' }}>
-      <h2>Loading Editor Workspace...</h2>
-    </div>
-  )
-});
+export const metadata: Metadata = {
+  title: 'Edit PDF - Edit your PDF online for free',
+  description: 'Edit PDF files directly in your browser. Add text, highlights, and more.',
+};
 
 export default function EditPage() {
-  return <Editor />;
+  return <EditClient />;
 }
