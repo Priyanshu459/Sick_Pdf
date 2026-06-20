@@ -88,7 +88,7 @@ export async function POST(request: NextRequest) {
 
     await browser.close();
 
-    const response = new NextResponse(pdfBuffer);
+    const response = new NextResponse(Buffer.from(pdfBuffer));
     response.headers.set('Content-Type', 'application/pdf');
     response.headers.set('Content-Disposition', `attachment; filename="converted.pdf"`);
     
