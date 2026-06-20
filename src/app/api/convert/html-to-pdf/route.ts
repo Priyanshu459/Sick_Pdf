@@ -54,7 +54,7 @@ export async function POST(request: NextRequest) {
     if (type === 'html') {
       // Disable JS for raw HTML snippets to prevent XSS data exfiltration
       await page.setJavaScriptEnabled(false);
-      await page.setContent(content, { waitUntil: 'networkidle0', timeout: 30000 });
+      await page.setContent(content, { waitUntil: 'load', timeout: 30000 });
     } else {
       // Basic URL validation
       let urlStr = content;
