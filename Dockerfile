@@ -22,6 +22,8 @@ WORKDIR /app
 COPY package.json package-lock.json* ./
 
 # Install dependencies
+ENV PUPPETEER_SKIP_DOWNLOAD=true
+ENV PUPPETEER_EXECUTABLE_PATH=/usr/bin/chromium
 RUN npm ci
 
 # Copy all project files
