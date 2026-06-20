@@ -13,7 +13,9 @@ import {
   Type,
   Hash,
   ScanText,
-  Cloud
+  Cloud,
+  Presentation,
+  Globe
 } from 'lucide-react';
 import styles from './page.module.css';
 
@@ -115,6 +117,20 @@ const TOOLS = [
     icon: <Settings2 className={styles.toolIcon} />,
     href: '/organize',
     color: '#EC4899' // pink
+  },
+  {
+    title: 'PDF to PPT',
+    description: 'Turn your PDF files into easy to edit PPT and PPTX slideshows.',
+    icon: <Presentation className={styles.toolIcon} />,
+    href: '/convert/pdf-to-ppt',
+    color: '#F97316' // orange
+  },
+  {
+    title: 'HTML to PDF',
+    description: 'Convert webpages or raw HTML code into a high-quality PDF document instantly.',
+    icon: <Globe className={styles.toolIcon} />,
+    href: '/convert/html-to-pdf',
+    color: '#0EA5E9' // light blue
   }
 ];
 

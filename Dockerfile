@@ -9,10 +9,11 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     python3 \
     python3-pip \
     zip \
+    chromium \
     && rm -rf /var/lib/apt/lists/*
 
-# Install python dependencies for PDF to Word and PDF to Excel
-RUN pip3 install pdf2docx "PyMuPDF<1.24.0" pdfplumber pandas openpyxl
+# Install python dependencies for PDF to Word, PDF to Excel, and PDF to PPTX
+RUN pip3 install pdf2docx "PyMuPDF<1.24.0" pdfplumber pandas openpyxl python-pptx
 
 # Set working directory
 WORKDIR /app

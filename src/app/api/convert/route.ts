@@ -34,10 +34,10 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ success: false, error: 'File size exceeds 50MB limit' }, { status: 400 });
     }
 
-    if (type.startsWith('pdf-to-') && type !== 'pdf-to-word' && type !== 'pdf-to-jpg' && type !== 'pdf-to-excel') {
+    if (type.startsWith('pdf-to-') && type !== 'pdf-to-word' && type !== 'pdf-to-jpg' && type !== 'pdf-to-excel' && type !== 'pdf-to-ppt') {
       return NextResponse.json({ 
         success: false, 
-        error: `Server Error: PDF to Office conversion requires a paid 3rd-party OCR/conversion API. We currently only support PDF to Word, PDF to Excel, and PDF to JPG.` 
+        error: `Server Error: PDF to Office conversion requires a paid 3rd-party OCR/conversion API. We currently only support PDF to Word, PDF to Excel, PDF to PPT, and PDF to JPG.` 
       }, { status: 501 });
     }
 
@@ -67,7 +67,9 @@ export async function POST(request: NextRequest) {
       outputFilepath = join(uploadDir, `${uniqueId}_output.docx`);
       try {
         const scriptPath = join(process.cwd(), 'src', 'scripts', 'pdf2word.py');
-        const pythonCmd = process.platform === 'win32' ? 'python' : 'python3';
+        const pythonCmd = process.platform === 'win32' 
+          ? 'C:\\Users\\priya\\AppData\\Local\\Programs\\Python\\Python310\\python.exe' 
+          : 'python3';
         await execFileAsync(pythonCmd, [scriptPath, inputFilepath, outputFilepath], { timeout: 60000 });
       } catch (execError: any) {
         console.error('Python PDF2Word Error:', execError);
@@ -77,11 +79,25 @@ export async function POST(request: NextRequest) {
       outputFilepath = join(uploadDir, `${uniqueId}_output.xlsx`);
       try {
         const scriptPath = join(process.cwd(), 'src', 'scripts', 'pdf2excel.py');
-        const pythonCmd = process.platform === 'win32' ? 'python' : 'python3';
+        const pythonCmd = process.platform === 'win32' 
+          ? 'C:\\Users\\priya\\AppData\\Local\\Programs\\Python\\Python310\\python.exe' 
+          : 'python3';
         await execFileAsync(pythonCmd, [scriptPath, inputFilepath, outputFilepath], { timeout: 60000 });
       } catch (execError: any) {
         console.error('Python PDF2Excel Error:', execError);
         throw new Error('Failed to convert PDF to Excel');
+      }
+    } else if (type === 'pdf-to-ppt') {
+      outputFilepath = join(uploadDir, `${uniqueId}_output.pptx`);
+      try {
+        const scriptPath = join(process.cwd(), 'src', 'scripts', 'pdf2pptx.py');
+        const pythonCmd = process.platform === 'win32' 
+          ? 'C:\\Users\\priya\\AppData\\Local\\Programs\\Python\\Python310\\python.exe' 
+          : 'python3';
+        await execFileAsync(pythonCmd, [scriptPath, inputFilepath, outputFilepath], { timeout: 60000 });
+      } catch (execError: any) {
+        console.error('Python PDF2PPT Error:', execError);
+        throw new Error('Failed to convert PDF to PPT');
       }
     } else if (type === 'pdf-to-jpg') {
       outputFilepath = join(uploadDir, `${uniqueId}_output.zip`);
@@ -169,6 +185,9 @@ export async function POST(request: NextRequest) {
     } else if (type === 'pdf-to-excel') {
       response.headers.set('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
       response.headers.set('Content-Disposition', `attachment; filename="converted.xlsx"`);
+    } else if (type === 'pdf-to-ppt') {
+      response.headers.set('Content-Type', 'application/vnd.openxmlformats-officedocument.presentationml.presentation');
+      response.headers.set('Content-Disposition', `attachment; filename="converted.pptx"`);
     } else if (type === 'pdf-to-jpg') {
       response.headers.set('Content-Type', 'application/zip');
       response.headers.set('Content-Disposition', `attachment; filename="images.zip"`);

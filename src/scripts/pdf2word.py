@@ -1,4 +1,5 @@
 import sys
+# pyrefly: ignore [missing-import]
 from pdf2docx import Converter
 
 def main():
